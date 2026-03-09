@@ -1,30 +1,27 @@
-# 🖥️ Day 2 – Splunk Server Deployment on AWS
+# Setup-02 — Splunk Enterprise Deployment on AWS EC2
+
+![AWS](https://img.shields.io/badge/Platform-AWS-FF9900?style=flat-square&logo=amazonaws)
+![Splunk](https://img.shields.io/badge/SIEM-Splunk%20Enterprise-FF6B35?style=flat-square&logo=splunk)
+![Ubuntu](https://img.shields.io/badge/OS-Ubuntu%2022.04-E95420?style=flat-square&logo=ubuntu)
+![Status](https://img.shields.io/badge/Status-Completed-brightgreen?style=flat-square)
 
 ---
 
-## 🎯 Objective
+## 📋 Overview
 
-Deploy and configure **Splunk Enterprise SIEM** on an Ubuntu EC2 instance inside a custom AWS VPC to act as the central log monitoring server for the Enterprise SOC Lab.
+Splunk Enterprise was deployed on an Ubuntu EC2 instance inside the custom SOC-VPC to act as the central SIEM for the Enterprise SOC Lab. All logs from Active Directory, Windows endpoints, and the web server are forwarded to this instance for real-time monitoring, detection, and investigation.
 
 ---
 
-## 🏗️ Architecture Overview
+## 🏗️ Architecture
 
-### 🔁 Data Flow
+
 
 ```
-Attacker → Internet → AWS VPC → Splunk Server → SOC Analyst
+Windows Endpoint  ──┐
+Active Directory  ──┼──► Splunk Universal Forwarder ──► Splunk Server (EC2) ──► SOC Analyst
+Ubuntu Web Server ──┘                                     Port 9997 (receiving)    Port 8000 (UI)
 ```
-
-This means:
-
-- Logs are generated from systems
-- Logs are sent to Splunk
-- SOC Analyst monitors and investigates alerts
-
----
-
-## 📸 Splunk Deployment Architecture
 
 <p align="center">
   <img src="assets/splunk-architecture.png" width="800">
@@ -32,74 +29,58 @@ This means:
 
 ---
 
-# 🚀 Step 1 – Launch Ubuntu EC2 Instance
+## ⚙️ EC2 Instance Configuration
 
-### 🔹 Go to AWS Console → EC2 → Launch Instance
-
-Configure:
-
-- **AMI:** Ubuntu Server 22.04 LTS
-- **Instance Type:** t2.micro (Free Tier)
-- **Key Pair:** Select or create new
-- **Network:** Custom SOC VPC
-- **Auto-assign Public IP:** Enabled
+| Setting | Value |
+|---|---|
+| AMI | Ubuntu Server 22.04 LTS |
+| Instance Type | t2.micro (Free Tier) |
+| Network | SOC-VPC |
+| Subnet | SOC-Public-Subnet |
+| Auto-assign Public IP | Enabled |
+| Storage | 30GB gp2 |
 
 ---
 
-## 🔐 Step 2 – Configure Security Group
-
-Allow the following inbound ports:
+## 🔐 Security Group — Inbound Rules
 
 | Port | Protocol | Purpose |
-|------|----------|----------|
-| 22 | TCP | SSH Access |
+|---|---|---|
+| 22 | TCP | SSH access for administration |
 | 8000 | TCP | Splunk Web Interface |
-| 9997 | TCP | Log Receiving Port |
+| 9997 | TCP | Log receiving from Universal Forwarders |
 
 ---
 
-## 📸 EC2 Instance Running
+## ⚙️ Deployment Steps
 
-<p align="center">
-  <img src="assets/splunk-ec2-instance-running.png" width="800">
-</p>
-
----
-
-# 🔑 Step 3 – Connect to EC2 via SSH
-
-From your local machine:
+### Step 1 — Connect to EC2 via SSH
 
 ```bash
 ssh -i your-key.pem ubuntu@<EC2-Public-IP>
 ```
 
-Example:
+---
+
+### Step 2 — Update System Packages
 
 ```bash
-ssh -i soc-key.pem ubuntu@18.226.xxx.xxx
+sudo apt update && sudo apt upgrade -y
 ```
 
 ---
 
-# 🔄 Step 4 – Update System Packages
+### Step 3 — Download Splunk Enterprise
 
 ```bash
-sudo apt update
-sudo apt upgrade -y
+wget -O splunk.tgz "https://download.splunk.com/products/splunk/releases/9.x.x/linux/splunk-9.x.x-linux-amd64.tgz"
 ```
+
+> Get the latest download URL from: splunk.com/en_us/download/splunk-enterprise.html
 
 ---
 
-# 📥 Step 5 – Download Splunk Enterprise
-
-```bash
-wget -O splunk.tgz https://download.splunk.com/products/splunk/releases/9.x.x/linux/splunk-9.x.x-linux-amd64.tgz
-```
-
----
-
-# 📂 Step 6 – Extract & Install Splunk
+### Step 4 — Extract and Install
 
 ```bash
 tar -xvzf splunk.tgz
@@ -109,73 +90,19 @@ cd /opt/splunk/bin
 
 ---
 
-# ▶ Step 7 – Start Splunk
+### Step 5 — Start Splunk and Configure Admin Account
 
 ```bash
 sudo ./splunk start
 ```
 
-- Accept license → type `y`
-- Create admin username
-- Create password
+- Accept license agreement → type `y`
+- Set admin username
+- Set admin password
 
 ---
 
-## 📸 Splunk Installation Output
-
-<p align="center">
-  <img src="assets/ubuntu-installation.png" width="800">
-</p>
-
----
-
-# 🌐 Step 8 – Access Splunk Web Interface
-
-Open browser:
-
-```
-http://<EC2-Public-IP>:8000
-```
-
-Example:
-
-```
-http://18.226.xxx.xxx:8000
-```
-
-Login using admin credentials.
-
----
-
-## 📸 Splunk Web Login Page
-
-
-<p align="center">
-  <img src="assets/splunk-running.png" width="800">
-</p>
-
-
----
-
-# 📡 Step 9 – Enable Log Receiving (Port 9997)
-
-Inside Splunk:
-
-1. Go to **Settings**
-2. Click **Forwarding and Receiving**
-3. Select **Configure Receiving**
-4. Add new port
-5. Enter:
-
-```
-9997
-```
-
-Save changes.
-
----
-
-# 🔄 Step 10 – Enable Auto Start on Boot
+### Step 6 — Enable Auto-Start on Boot
 
 ```bash
 sudo ./splunk enable boot-start
@@ -183,45 +110,81 @@ sudo ./splunk enable boot-start
 
 ---
 
-# ✅ Step 11 – Verify Splunk Status
+### Step 7 — Verify Splunk is Running
 
 ```bash
 sudo ./splunk status
 ```
 
-Expected Output:
+Expected output:
 
 ```
-splunkd is running
+splunkd is running (PID: XXXXX)
 ```
 
 ---
 
-# 🏆 Day 2 Achievements
+### Step 8 — Access Splunk Web Interface
 
-✔ Ubuntu EC2 deployed  
-✔ Custom Security Group configured  
-✔ Splunk Enterprise installed  
-✔ Web Interface accessible  
-✔ Log receiving port enabled  
-✔ Boot start configured  
+Open browser and navigate to:
 
----
+```
+http://<EC2-Public-IP>:8000
+```
 
-# 🧠 Skills Demonstrated
-
-- AWS EC2 Deployment
-- Linux Administration
-- Security Group Configuration
-- Splunk Installation
-- SIEM Infrastructure Setup
-- SOC Architecture Building
+Login with the admin credentials created in Step 5.
 
 ---
 
-# 🚀 Next Steps
+### Step 9 — Enable Log Receiving on Port 9997
 
-- Create Splunk Indexes
-- Install Universal Forwarder on Windows
-- Connect Active Directory logs to Splunk
-- Build Detection Rules
+Inside Splunk Web UI:
+
+```
+Settings → Forwarding and Receiving → Configure Receiving → New Receiving Port → 9997
+```
+
+This opens port 9997 to receive logs from Universal Forwarders installed on endpoint machines.
+
+---
+
+### Step 10 — Create SOC Lab Indexes
+
+```
+Settings → Indexes → New Index
+```
+
+Create the following indexes used across all detection labs:
+
+| Index Name | Purpose |
+|---|---|
+| `end_point` | Windows endpoint logs |
+| `windows` | Active Directory / Domain Controller logs |
+| `ad_logs` | AD-specific event logs |
+| `web_logs` | Apache web server logs from Ubuntu EC2 |
+
+---
+
+## ✅ Deployment Summary
+
+| Component | Status |
+|---|---|
+| Ubuntu EC2 launched | ✅ |
+| Security group configured | ✅ |
+| Splunk Enterprise installed | ✅ |
+| Web interface accessible on port 8000 | ✅ |
+| Log receiving enabled on port 9997 | ✅ |
+| Boot-start configured | ✅ |
+| SOC indexes created | ✅ |
+
+---
+
+## 🔗 Next Steps
+
+- [Setup-03 → Active Directory Setup](03_Active_Directory_Setup.md)
+- [Setup-04 → Web Server (DVWA) Deployment](04_Web_Server_Setup.md)
+- [Endpoint Attacks → E1 Malware Execution](../endpoint-attacks/E1_Malware_Execution_4688.md)
+
+---
+
+*SOC Lab Infrastructure | Splunk Enterprise 9.x | Ubuntu 22.04 | AWS Free Tier | Author: [Nadil](https://github.com/Nadhil-an)*
