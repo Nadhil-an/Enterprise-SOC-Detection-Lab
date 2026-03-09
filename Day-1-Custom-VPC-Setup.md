@@ -1,138 +1,131 @@
-## 🏗 VPC Configuration Diagram
+# Setup-01 — Custom VPC & Subnet Configuration on AWS
 
-<p align="center">
-  <img src="assets/vpc-configuration.png" width="800">
-</p>
+![AWS](https://img.shields.io/badge/Platform-AWS-FF9900?style=flat-square&logo=amazonaws)
+![VPC](https://img.shields.io/badge/Service-VPC-232F3E?style=flat-square)
+![Status](https://img.shields.io/badge/Status-Completed-brightgreen?style=flat-square)
 
+---
 
-Day 1 – Custom VPC & Subnet Setup on AWS
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-🎯 Objective
+## 📋 Overview
 
-Create an isolated cloud network environment to deploy the Enterprise SOC Lab infrastructure.
+This document covers the setup of an isolated AWS cloud network environment to host the Enterprise SOC Lab infrastructure. A custom VPC with a public subnet, internet gateway, and routing table was configured to simulate a real enterprise network — providing the foundation for deploying Active Directory, Splunk SIEM, endpoint machines, and a web server.
 
-## 🏗 Architecture Overview
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+---
+
+## 🏗️ Architecture
+
 ```
 Internet
-   ↓
+    │
+    ▼
 Internet Gateway (SOC-IGW)
-   ↓
+    │
+    ▼
 SOC-VPC (10.0.0.0/16)
-   └── SOC-Public-Subnet (10.0.1.0/24)
+    └── SOC-Public-Subnet (10.0.1.0/24)
+              ├── Active Directory Server
+              ├── Splunk SIEM Server
+              ├── Endpoint Machine (Windows)
+              └── Web Server (Ubuntu/DVWA)
 ```
-1️⃣ Step 1 – Create Custom VPC
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-1.1 Navigate
 
-AWS Console → VPC → Create VPC
+---
 
-1.2 Select
+## ⚙️ Configuration Steps
 
-Choose VPC Only
+### Step 1 — Create Custom VPC
 
-1.3 Configuration
+**Navigate:** AWS Console → VPC → Your VPCs → Create VPC
 
-| Setting         | Value       |
-| --------------- | ----------- |
-| Name            | SOC-VPC     |
+| Setting | Value |
+|---|---|
+| Resource | VPC Only |
+| Name | SOC-VPC |
 | IPv4 CIDR Block | 10.0.0.0/16 |
-| IPv6            | None        |
-| Tenancy         | Default     |
+| IPv6 | None |
+| Tenancy | Default |
 
-Click Create VPC
+> `10.0.0.0/16` provides 65,536 IP addresses — sufficient for all SOC lab components with room to scale.
 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-📌 Explanation
+---
 
-10.0.0.0/16 provides 65,536 IP addresses
+### Step 2 — Create Public Subnet
 
-Ensures scalability for multiple SOC lab components
+**Navigate:** VPC → Subnets → Create Subnet
 
-2️⃣ Step 2 – Create Public Subnet
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-2.1 Navigate
+| Setting | Value |
+|---|---|
+| VPC | SOC-VPC |
+| Subnet Name | SOC-Public-Subnet |
+| Availability Zone | Any |
+| IPv4 CIDR Block | 10.0.1.0/24 |
 
-VPC → Subnets → Create Subnet
+> `10.0.1.0/24` provides 256 IP addresses — dedicated to all SOC lab EC2 instances.
 
-2.2 Configuration
-| Setting           | Value             |
-| ----------------- | ----------------- |
-| VPC               | SOC-VPC           |
-| Subnet Name       | SOC-Public-Subnet |
-| Availability Zone | Any               |
-| IPv4 CIDR Block   | 10.0.1.0/24       |
+---
 
-Click Create Subnet
+### Step 3 — Create & Attach Internet Gateway
 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-📌 Explanation
+**Navigate:** VPC → Internet Gateways → Create Internet Gateway
 
-10.0.1.0/24 provides 256 IP addresses
+| Setting | Value |
+|---|---|
+| Name | SOC-IGW |
 
-Used to host:
+After creation → **Actions → Attach to VPC → Select SOC-VPC**
 
-Active Directory Server
+> Without an internet gateway, EC2 instances cannot reach the internet for log forwarding, package installation, or API calls.
 
-Endpoint Machine
+---
 
-Web Server
+### Step 4 — Configure Route Table
 
-Splunk Server
+**Navigate:** VPC → Route Tables → Select SOC-VPC route table → Edit Routes
 
-3️⃣ Step 3 – Enable Internet Access
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Without this step, EC2 instances cannot access the internet.
+**Add route:**
 
-3.1 Create Internet Gateway
+| Destination | Target |
+|---|---|
+| 0.0.0.0/0 | SOC-IGW (Internet Gateway) |
 
-VPC → Internet Gateways → Create Internet Gateway
+**Associate subnet:**
 
-Name: SOC-IGW
+Route Table → Subnet Associations → Edit → Select `SOC-Public-Subnet`
 
-3.2 Attach Internet Gateway
+---
 
-Select SOC-IGW → Attach to VPC → Choose SOC-VPC
+### Step 5 — Enable Auto-Assign Public IP
 
-4️⃣ Step 4 – Configure Route Table
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-4.1 Add Internet Route
+**Navigate:** Subnets → SOC-Public-Subnet → Edit Subnet Settings
 
-VPC → Route Tables → Edit Routes
+- ✅ Enable Auto-assign public IPv4 address
 
-| Destination | Target                     |
-| ----------- | -------------------------- |
-| 0.0.0.0/0   | Internet Gateway (SOC-IGW) |
+> This ensures every EC2 instance launched in this subnet automatically receives a public IP — required for RDP/SSH access and internet connectivity.
 
-4.2 Associate Subnet
+---
 
-Route Table → Subnet Associations → Select SOC-Public-Subnet
+## ✅ Infrastructure Summary
 
-5️⃣ Step 5 – Enable Auto-Assign Public IP
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Subnets → SOC-Public-Subnet → Edit Subnet Settings
+| Component | Value | Status |
+|---|---|---|
+| VPC Name | SOC-VPC | ✅ Created |
+| VPC CIDR | 10.0.0.0/16 | ✅ Configured |
+| Subnet Name | SOC-Public-Subnet | ✅ Created |
+| Subnet CIDR | 10.0.1.0/24 | ✅ Configured |
+| Internet Gateway | SOC-IGW | ✅ Attached |
+| Route Table | 0.0.0.0/0 → SOC-IGW | ✅ Configured |
+| Auto-assign Public IP | Enabled | ✅ Active |
 
-✔ Enable Auto-assign public IPv4 address
+---
 
+## 🔗 Next Steps
 
-## ✅ Infrastructure Achieved
+This VPC forms the foundation for all subsequent lab components:
 
-- ✔ Created isolated AWS VPC  
-- ✔ Designed custom IP address range  
-- ✔ Created public subnet  
-- ✔ Enabled internet connectivity  
-- ✔ Configured routing  
-- ✔ Prepared environment for EC2 deployment  
+- [Setup-02 → Splunk Server Deployment](02_Splunk_Deployment.md)
+- [Setup-03 → Active Directory Setup](03_Active_Directory_Setup.md)
+- [Setup-04 → Web Server (DVWA) Deployment](04_Web_Server_Setup.md)
 
+---
 
-
-## 🧠 Why This Is Important for SOC Lab
-
-- Simulates real enterprise cloud infrastructure  
-- Enables log collection from multiple systems  
-- Forms foundation for:
-
-  - Active Directory  
-  - Endpoint Monitoring  
-  - Splunk SIEM  
-
+*SOC Lab Infrastructure | AWS Free Tier | Author: [Nadil](https://github.com/Nadhil-an)*
