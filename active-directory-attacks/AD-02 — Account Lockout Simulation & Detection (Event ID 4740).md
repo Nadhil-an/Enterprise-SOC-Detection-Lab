@@ -69,12 +69,18 @@ After configuring the policy, it was applied immediately using:
 gpupdate /force
 ```
 
-**Screenshot — Account Lockout Policy Configuration:**
+** Account Lockout Policy Configuration:**
 
 <p align="center">
-  <img src="../assets/ad02-lockout-policy.png" width="700">
+  <img src="../assets/ad-accountlogout.jpg" width="700">
 </p>
 
+
+
+
+<p align="center">
+  <img src="../assets/ad-logoutconfiguration.jpg" width="700">
+</p>
 ---
 
 ### Phase 2 — Generate Failed Login Attempts (Trigger Lockout)
@@ -106,15 +112,7 @@ Category  : Account Management
 Message   : A user account was locked out
 ```
 
-**Expected lockout message on login screen:**
 
-> *"The referenced account is currently locked out and may not be logged on to."*
-
-**Screenshot — Account Lockout Triggered (RDP Error Message):**
-
-<p align="center">
-  <img src="../assets/ad02-account-locked.png" width="700">
-</p>
 
 ---
 
@@ -163,7 +161,7 @@ index=windows EventCode=4740
 **Screenshot — Splunk Detection (Event ID 4740):**
 
 <p align="center">
-  <img src="../assets/ad02-splunk-4740.png" width="700">
+  <img src="../assets/ad-logotsplunk.jpg" width="700">
 </p>
 
 ---
