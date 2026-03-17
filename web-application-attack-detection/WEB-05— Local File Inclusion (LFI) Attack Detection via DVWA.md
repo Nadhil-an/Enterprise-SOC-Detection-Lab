@@ -1,4 +1,4 @@
-# WEB-04 — Local File Inclusion (LFI) Attack Detection via DVWA
+# WEB-05 — Local File Inclusion (LFI) Attack Detection via DVWA
 
 ![MITRE](https://img.shields.io/badge/MITRE-T1006-red) ![Severity](https://img.shields.io/badge/Severity-High-red) ![Platform](https://img.shields.io/badge/Platform-Web%20Application-blue) ![SIEM](https://img.shields.io/badge/SIEM-Splunk-green)
 
