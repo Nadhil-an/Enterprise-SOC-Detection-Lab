@@ -29,9 +29,8 @@ A SQL Injection attack was simulated against a DVWA (Damn Vulnerable Web Applica
 
 Navigate to `http://<public-ip>/DVWA` → Login → Set DVWA Security to **Low** → Go to **SQL Injection** module.
 >
-> *(Should show: DVWA SQL Injection page with "User ID" input box)*
 
-```
+
 <p align="center">
   <img src="../assets/WEB-01-01-dvwa-sqli-page.png" width="700">
 </p>
@@ -75,11 +74,10 @@ The page returns all 5 users from the database:
 | Pablo | Picasso |
 | Bob | Smith |
 >
-```
+
 <p align="center">
   <img src="../assets/WEB-01-02-sqli-result.png" width="700">
 </p>
-```
 
 ---
 
@@ -106,11 +104,10 @@ GET /DVWA/vulnerabilities/sqli/?id=1%27+OR+%271%27%3D%271&Submit=Submit HTTP/1.1
 | `+` | ` ` (space) |
 
 So `1%27+OR+%271%27%3D%271` = `1' OR '1'='1` — the attack payload is clearly visible in the log.
-```
+
 <p align="center">
   <img src="../assets/WEB-01-03-apache-access-log.png" width="700">
 </p>
-```
 
 ---
 
@@ -128,11 +125,10 @@ index=web_logs
 ```
 
 This searches for all requests containing `%27` (encoded single quote) — the signature of SQL Injection in Apache logs.
-```
+
 <p align="center">
   <img src="../assets/WEB-01-04-splunk-search.png" width="700">
 </p>
-```
 
 ---
 
