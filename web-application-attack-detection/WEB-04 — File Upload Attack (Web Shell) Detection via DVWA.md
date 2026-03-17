@@ -107,7 +107,7 @@ www-data
 ```
 
 <p align="center">
-  <img src="../assets/WEB-04-03-rce-whoami-output.png" width="700">
+  <img src="../assets/assetsWEB-04-03-rce-whoami-output.png" width="700">
 </p>
 
 > *(Should show: browser URL bar with `shell.php?cmd=whoami` and `www-data` displayed as output)*
