@@ -14,48 +14,9 @@
 
 ## 🏗️ SOC Architecture
 
-```
-                        ┌─────────────────────────────────┐
-                        │         Attacker Machine         │
-                        └────────────────┬────────────────┘
-                                         │
-                                         ▼
-                              Internet Gateway (SOC-IGW)
-                                         │
-                        ┌────────────────▼────────────────┐
-                        │        SOC-VPC (10.0.0.0/16)    │
-                        │                                  │
-                        │  ┌─────────────────────────┐    │
-                        │  │  Active Directory (DC)   │    │
-                        │  │  Windows Server 2022     │    │
-                        │  │  Domain: soc.local       │    │
-                        │  └──────────┬──────────────┘    │
-                        │             │ Splunk Forwarder   │
-                        │  ┌──────────▼──────────────┐    │
-                        │  │  Windows Endpoint        │    │
-                        │  │  Domain-Joined Workstation│   │
-                        │  └──────────┬──────────────┘    │
-                        │             │ Splunk Forwarder   │
-                        │  ┌──────────▼──────────────┐    │
-                        │  │  Ubuntu Web Server       │    │
-                        │  │  Apache2 + DVWA          │    │
-                        │  └──────────┬──────────────┘    │
-                        │             │ Splunk Forwarder   │
-                        │  ┌──────────▼──────────────┐    │
-                        │  │   Splunk Enterprise      │    │
-                        │  │   Central SIEM           │    │
-                        │  │   Port 8000 (UI)         │    │
-                        │  │   Port 9997 (Receiving)  │    │
-                        │  └──────────┬──────────────┘    │
-                        │             │                    │
-                        └─────────────┼────────────────────┘
-                                      │
-                                      ▼
-                               SOC Analyst
-```
 <div>
   <p align="center">
-    <img src="assets/soc-architecture.png" width="900">
+    <img src="assets/main architecture.png" width="900">
   </p>
 </div>
 
